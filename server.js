@@ -3,8 +3,10 @@ var bodyParser = require("body-parser");
 var logger = require("morgan");
 var mongoose = require("mongoose");
 
+
+
 // Using es6 js promise
-mongoose.Promise = Promise;
+mongoose.Promise = global.Promise;
 // Our scraping tools
 // Axios is a promised-based http library, similar to jQuery's Ajax method
 // It works on the client and on the server
@@ -48,7 +50,7 @@ app.get("/", function(req, res) {
   // Grab every document in the Articles collection
   db.Article.find({})
     .then(function(dbArticle) {
-    //  console.log(dbArticle);
+     console.log(dbArticle);
     // If we were able to successfully find Articles, send them back to the client
     // res.json(dbArticle);
      var articleData = {
@@ -72,26 +74,27 @@ app.get("/scrape", function(req, res) {
     var $ = cheerio.load(response.data);
 
     // Now, we grab every title class, and do the following:
-    $(".title").each(function(i, element) {
+    $("h2.title").each(function(i, element) {
       // Save an empty result object
       var result = {};
-
+      console.log($(this));
       // Add the text and href of every link, and save them as properties of the result object
       result.title = $(this)
-        .children("a")
+        .find("a")
         .text();
       result.link = $(this)
-        .children("a")
+        .find("a")
         .attr("href");
 
+      console.log(result);  
       // Create a new Article using the `result` object built from scraping
       db.Article.create(result)
-        .then(function(dbArticle) {
+        .then(function(result) {
           // View the added result in the console
-          console.log(dbArticle);
+          console.log(result);
         })
         var articleData = {
-          data: dbArticle
+          data: result
         }
       // Render to handlebars
         res.render('index', articleData);
